@@ -20,7 +20,9 @@
     "clean": "npx rimraf node_modules",
     "clean:cache": "npx rimraf node_modules/.cache",
     "prepare": "husky install",
-    "analysis": "windicss-analysis"
+    "analysis": "windicss-analysis",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
@@ -37,7 +39,7 @@
     "lodash-es": "^4.17.21",
     "mitt": "^3.0.0",
     "nprogress": "^0.2.0",
-    "pinia": "^2.1.7",
+    "pinia": "^2.3.1",
     "pinia-plugin-persistedstate": "^3.2.1",
     "print-js": "^1.6.0",
     "sortablejs": "^1.15.0",
