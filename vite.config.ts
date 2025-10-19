@@ -9,6 +9,9 @@ import EslintPlugin from 'vite-plugin-eslint'
 import { viteMockServe } from 'vite-plugin-mock'
 import progress from 'vite-plugin-progress'
 import VueI18nPlugin from '@intlify/unplugin-vue-i18n/vite'
+import { defineConfig } from 'vite'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import path from 'path'
 
 const root = process.cwd()
 
@@ -63,6 +66,7 @@ export default defineConfig(({ command, mode }: ConfigEnv): UserConfig => {
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.less', '.css'],
       alias: [
         {
+          '@': path.resolve(__dirname, 'src'), // 确保 '@' 指向 src 目录
           find: 'vue-i18n',
           replacement: 'vue-i18n/dist/vue-i18n.cjs.js'
         },
