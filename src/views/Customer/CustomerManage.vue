@@ -36,7 +36,7 @@ import { useHandleData } from '@/hooks/useHandleData'
 import { CustomerLevelList, CustomerSourceList, FollowUpStatusList, GenderList, IsKeyDecisionMakerList } from '@/configs/enum'
 import { ElMessageBox } from 'element-plus'
 import { useDownload } from '@/hooks/useDownload'
-import CustomerDialog from '@/views/customer/components/CustomerDialog.vue'
+import CustomerDialog from '@/views/Customer/components/CustomerDialog.vue'
 // 获取 ProTable 元素
 const proTable = ref()
 
