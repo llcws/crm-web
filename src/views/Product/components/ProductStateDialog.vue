@@ -1,5 +1,12 @@
 <template>
-  <Dialog v-model="dialogVisible" :title="dialogProps.title" :fullscreen="dialogProps.fullscreen" :max-height="dialogProps.maxHeight" :cancel-dialog="cancelDialog" width="35%">
+  <Dialog
+    :model-value="dialogVisible"
+    :title="dialogProps.title"
+    :fullscreen="dialogProps.fullscreen"
+    :max-height="dialogProps.maxHeight"
+    :cancel-dialog="cancelDialog"
+    width="35%"
+  >
     <div :style="'width: calc(100% - ' + dialogProps.labelWidth! / 2 + 'px)'">
       <el-form
         ref="ruleFormRef"
@@ -14,7 +21,7 @@
           <el-date-picker
             v-model="dialogProps.row.time"
             type="datetime"
-            :placeholder="'请选择' + dialogProps.title + '时间'"
+            :placeholder="`请选择${dialogProps.title}时间`"
             value-format="YYYY-MM-DD HH:mm:ss"
             :disabled-date="(time) => time.getTime() < Date.now() - 8.64e7"
           />
@@ -34,7 +41,6 @@
 import { ref, computed } from 'vue'
 import { dayjs, ElMessage, FormInstance } from 'element-plus'
 import { Dialog } from '@/components/Dialog'
-
 interface DialogProps {
   title: string
   isView: boolean
@@ -45,14 +51,13 @@ interface DialogProps {
   api?: (params: any) => Promise<any>
   getTableList?: () => Promise<any>
 }
-
 const dialogVisible = ref(false)
 const dialogProps = ref<DialogProps>({
   isView: false,
   title: '',
   row: {},
   labelWidth: 160,
-  fullscreen: true,
+  fullscreen: false,
   maxHeight: '500px'
 })
 
@@ -71,32 +76,30 @@ const acceptParams = (params: DialogProps): void => {
 defineExpose({
   acceptParams
 })
+const rules = computed(() => ({
+  time: [
+    {
+      required: true,
+      message: `请选择${dialogProps.value.title}时间`,
+      trigger: 'blur'
+    },
+    {
+      validator: (rule, value, callback) => {
+        if (!value) {
+          return callback(new Error(`请选择${dialogProps.value.title}时间`))
+        }
+        const now = dayjs()
+        const selected = dayjs(value)
+        if (selected.isBefore(now, 'minute')) {
+          return callback(new Error(`${dialogProps.value.title}时间不能早于当前时间`))
+        }
 
-const rules = computed(() => {
-  return {
-    time: [
-      {
-        required: true,
-        message: `请选择${dialogProps.value.title}时间`,
-        trigger: 'blur'
+        callback() // 校验通过
       },
-      {
-        validator: (rule: any, value: any, callback: any) => {
-          if (!value) {
-            return callback(new Error(`请选择${dialogProps.value.title}时间`))
-          }
-          const now = dayjs()
-          const selected = dayjs(value)
-          if (selected.isBefore(now, 'minute')) {
-            return callback(new Error(`${dialogProps.value.title}时间不能早于当前时间`))
-          }
-          callback() // 校验通过
-        },
-        trigger: 'change'
-      }
-    ]
-  }
-})
+      trigger: 'change'
+    }
+  ]
+}))
 
 const ruleFormRef = ref<FormInstance>()
 
@@ -112,7 +115,7 @@ const handleSubmit = () => {
         dialogProps.value.row.offShelfTime = dialogProps.value.row.time
       }
       await dialogProps.value.api!(dialogProps.value.row)
-      ElMessage.success({ message: `${dialogProps.value.title}成功` })
+      ElMessage.success({ message: `${dialogProps.value.title}成功！` })
       dialogProps.value.getTableList!()
       dialogVisible.value = false
       ruleFormRef.value!.resetFields()
@@ -122,7 +125,6 @@ const handleSubmit = () => {
     }
   })
 }
-
 const cancelDialog = (isClean?: boolean) => {
   dialogVisible.value = false
   let condition = ['查看', '编辑']

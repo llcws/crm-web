@@ -96,3 +96,17 @@ export const IsKeyDecisionMakerList: { [key in IsKeyDecisionMaker]: EnumInfo } =
   [IsKeyDecisionMaker.YES]: { value: 0, label: '是' },
   [IsKeyDecisionMaker.NO]: { value: 1, label: '否' }
 }
+
+export enum ContractStatus {
+  INITIALIZING,
+  UNDER_REVIEW,
+  APPROVED,
+  REJECTED
+}
+
+export const ContractStatusList: { [key in ContractStatus]: EnumInfo } = {
+  [ContractStatus.INITIALIZING]: { value: 0, label: '初始化' },
+  [ContractStatus.UNDER_REVIEW]: { value: 1, label: '审核中' },
+  [ContractStatus.APPROVED]: { value: 2, label: '审核通过' },
+  [ContractStatus.REJECTED]: { value: 3, label: '审核未通过' }
+}

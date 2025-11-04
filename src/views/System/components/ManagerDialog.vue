@@ -69,9 +69,6 @@ import { getRoleList } from '@/api/modules/role'
 import { getManagerInfoApi } from '@/api/modules/manager'
 import { useAppStoreWithOut } from '@/store/modules/app'
 import { useDepartmentStore } from '@/store/modules/department'
-
-const departmentStore = useDepartmentStore()
-const departmentList = departmentStore.departmentList
 const appStore = useAppStoreWithOut()
 interface DialogProps {
   title: string
@@ -90,9 +87,11 @@ const dialogProps = ref<DialogProps>({
   title: '',
   row: { status: 1, type: 0 },
   labelWidth: 160,
-  fullscreen: true,
+  fullscreen: false,
   maxHeight: '500px'
 })
+const departmentStore = useDepartmentStore()
+const departmentList = departmentStore.departmentList
 
 // 接收父组件传过来的参数
 const acceptParams = (params: DialogProps): void => {

@@ -49,8 +49,10 @@
       </el-form>
     </div>
     <template #footer>
-      <el-button @click="cancelDialog">取消</el-button>
-      <el-button type="primary" v-show="!dialogProps.isView" @click="handleSubmit">确定</el-button>
+      <slot name="footer">
+        <el-button @click="cancelDialog">取消</el-button>
+        <el-button type="primary" v-show="!dialogProps.isView" @click="handleSubmit">确定</el-button>
+      </slot>
     </template>
   </Dialog>
 </template>
@@ -61,8 +63,6 @@ import { ElMessage, FormInstance } from 'element-plus'
 import { Dialog } from '@/components/Dialog'
 import { ProductStatusList } from '@/configs/enum'
 import UploadImg from '@/components/Upload/Img.vue'
-// import Avatar from '@/layouts/components/Header/components/Avatar.vue'
-
 interface DialogProps {
   title: string
   isView: boolean
@@ -73,14 +73,13 @@ interface DialogProps {
   api?: (params: any) => Promise<any>
   getTableList?: () => Promise<any>
 }
-
 const dialogVisible = ref(false)
 const dialogProps = ref<DialogProps>({
   isView: false,
   title: '',
   row: {},
   labelWidth: 120,
-  fullscreen: true,
+  fullscreen: false,
   maxHeight: '500px'
 })
 
@@ -88,26 +87,26 @@ const dialogProps = ref<DialogProps>({
 const acceptParams = (params: DialogProps): void => {
   params.row = { ...dialogProps.value.row, ...params.row }
   dialogProps.value = { ...dialogProps.value, ...params }
-  if (dialogProps.value.title === '商品定时上架') {
-    dialogProps.value.row.time = dialogProps.value.row.onShellTime
-  } else {
-    dialogProps.value.row.time = dialogProps.value.row.offShellTime
-  }
   dialogVisible.value = true
 }
 
-defineExpose({ acceptParams })
-
+defineExpose({
+  acceptParams
+})
 const rules = reactive({
   name: [{ required: true, message: '请输入商品名称', trigger: 'blur' }],
   price: [
     { required: true, message: '请输入商品价格', trigger: 'blur' },
-    { pattern: /^\d+(\.\d{1,2})?$/, message: '商品价格最多小数点后两位', trigger: 'blur' }
+    {
+      pattern: /^\d+(\.\d{1,2})?$/,
+      message: '商品价格最多小数点后两位',
+      trigger: 'blur'
+    }
   ],
   stock: [
     { required: true, message: '请输入商品库存数量', trigger: 'blur' },
     {
-      validator: (rule: any, value: any, callback: any) => {
+      validator: (rule, value, callback) => {
         const num = Number(value)
         if (isNaN(num)) {
           callback(new Error('请输入数字'))
@@ -132,11 +131,6 @@ const handleSubmit = () => {
     try {
       delete dialogProps.value.row['updateTime']
       delete dialogProps.value.row['createTime']
-      if (dialogProps.value.title === '商品定时上架') {
-        dialogProps.value.row.onShellTime = dialogProps.value.row.time
-      } else {
-        dialogProps.value.row.offShellTime = dialogProps.value.row.time
-      }
       await dialogProps.value.api!(dialogProps.value.row)
       ElMessage.success({ message: `${dialogProps.value.title}成功！` })
       dialogProps.value.getTableList!()
@@ -148,13 +142,12 @@ const handleSubmit = () => {
     }
   })
 }
-
 const cancelDialog = (isClean?: boolean) => {
   dialogVisible.value = false
-  const condition = ['查看', '编辑']
+  let condition = ['查看', '编辑']
   if (condition.includes(dialogProps.value.title) || isClean) {
     dialogProps.value.row = {}
-    ruleFormRef.value?.resetFields()
+    ruleFormRef.value!.resetFields()
   }
 }
 </script>
