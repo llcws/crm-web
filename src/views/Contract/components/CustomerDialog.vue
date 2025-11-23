@@ -8,7 +8,7 @@
     width="70%"
     top="8vh"
   >
-    <CustomerManage :is-show-header="false" ref="customerManageRef" />
+    <CustomerManager :is-show-header="false" ref="customerManageRef" />
     <template #footer>
       <slot name="footer">
         <el-button @click="cancelDialog">取消</el-button>
@@ -21,7 +21,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Dialog } from '@/components/Dialog'
-import CustomerManage from '@/views/Customer/CustomerManage.vue'
+import CustomerManager from '@/views/Customer/CustomerManager.vue'
 import { ElMessage } from 'element-plus'
 
 interface DialogProps {

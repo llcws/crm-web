@@ -20,8 +20,15 @@
         <el-form-item v-if="dialogProps.title !== '重置'" label="用户名" prop="account">
           <el-input v-model="dialogProps.row!.account" placeholder="请填写用户名（2-20字）" clearable></el-input>
         </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="dialogProps.row.email" placeholder="请输入邮箱" clearable></el-input>
+        </el-form-item>
         <el-form-item v-if="dialogProps.title !== '重置'" label="昵称" prop="nickname">
           <el-input v-model="dialogProps.row!.nickname" placeholder="请填写昵称（2-20字）" clearable></el-input>
+        </el-form-item>
+        <!-- 新增邮箱输入项，清空默认值 -->
+        <el-form-item v-if="dialogProps.title !== '重置'" label="邮箱" prop="email">
+          <el-input v-model="dialogProps.row!.email" placeholder="请填写邮箱" clearable></el-input>
         </el-form-item>
         <el-form-item v-if="dialogProps.title === '新增' || dialogProps.title === '重置'" label="密码" prop="password">
           <el-input v-model="dialogProps.row!.password" show-password type="password" placeholder="请填写密码"></el-input>
@@ -85,7 +92,7 @@ const dialogVisible = ref(false)
 const dialogProps = ref<DialogProps>({
   isView: false,
   title: '',
-  row: { status: 1, type: 0 },
+  row: { status: 1, type: 0, email: '' }, // 清空邮箱默认值
   labelWidth: 160,
   fullscreen: false,
   maxHeight: '500px'
@@ -127,7 +134,6 @@ const rules = reactive({
       message: '密码不能为空'
     },
     {
-      //插入正则验证：大小写、数字、至少8位、不常用字符
       pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[._~!@#$^&*])[A-Za-z0-9._~!@#$^&*]{8,16}$/,
       message: '密码应当至少8位且含有数字、大小写字母及特殊字符'
     }
@@ -157,7 +163,6 @@ const handleSubmit = () => {
     if (!valid) return
     try {
       await dialogProps.value.api!(dialogProps.value.row).then((_) => {
-        // 如果被编辑的是当前用户，则刷新
         if (dialogProps.value.row.Id === appStore.$state.userInfo.Id)
           getManagerInfoApi().then((res) => {
             appStore.setUserinfo(res.data)
@@ -177,7 +182,7 @@ const cancelDialog = (isClean?: boolean) => {
   dialogVisible.value = false
   let condition = ['查看', '编辑']
   if (condition.includes(dialogProps.value.title) || isClean) {
-    dialogProps.value.row = { status: 1, type: 0 }
+    dialogProps.value.row = { status: 1, type: 0, email: '' } // 重置邮箱值
     ruleFormRef.value!.resetFields()
   }
 }

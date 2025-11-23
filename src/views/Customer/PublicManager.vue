@@ -17,7 +17,7 @@
   </div>
 </template>
 
-<script setup lang="ts" name="PublicManage">
+<script setup lang="ts" name="PublicManager">
 import { ref, reactive } from 'vue'
 import { ColumnProps } from '@/components/ProTable/interface'
 import ProTable from '@/components/ProTable/index.vue'

@@ -18,6 +18,11 @@
         :disabled="dialogProps.isView"
         :hide-required-asterisk="dialogProps.isView"
       >
+        <!-- 新增销售邮箱字段 -->
+        <el-form-item label="销售邮箱" prop="salesEmail">
+          <el-input v-model="dialogProps.row!.salesEmail" placeholder="销售邮箱" :disabled="true" clearable></el-input>
+        </el-form-item>
+
         <el-form-item label="合同编号" prop="number" v-if="dialogProps.row!.id">
           <el-input v-model="dialogProps.row!.number" readonly="true" show-word-limit></el-input>
         </el-form-item>
@@ -27,7 +32,6 @@
         <el-form-item label="签约客户" prop="customerId">
           <div class="flex" style="width: 100%">
             <el-input v-model="dialogProps.row!.customerName" placeholder="请选择要签约的客户" class="mr-18px" disabled> </el-input>
-
             <el-button type="primary" @click="openCustomerDialog">客户信息</el-button>
             <CustomerDialog ref="customerRef" @get-customer-data="openCustomerDialog" />
           </div>
@@ -132,7 +136,8 @@ const dialogProps = ref<DialogProps>({
   isView: false,
   title: '',
   row: {
-    products: []
+    products: [],
+    salesEmail: '' // 初始化销售邮箱字段
   },
   labelWidth: 120,
   fullscreen: false,
@@ -150,7 +155,7 @@ defineExpose({
   acceptParams
 })
 
-// ✅ 自定义校验函数
+// 自定义校验函数
 const validateEndTime = (rule, value, callback) => {
   if (!value) {
     callback(new Error('请选择合同结束时间'))
@@ -172,6 +177,7 @@ const rules = reactive({
     }
   ],
   signTime: [{ required: true, message: '请选择合同签约时间', trigger: 'blur' }]
+  // 销售邮箱不添加校验规则，仅做展示
 })
 
 // 新增一行
@@ -190,10 +196,9 @@ const removeContractProduct = (index) => {
   dialogProps.value.row.products.splice(index, 1)
 }
 
-// 计算小计（可选，实时更新单价×数量）
+// 计算小计
 const calculateSubtotal = (item) => {
   item.totalPrice = item.price * item.count
-  // 重新计算合同总金额，避免累加错误
   dialogProps.value.row.amount = dialogProps.value.row.products.reduce((total, product) => total + product.price * product.count, 0)
 }
 
@@ -220,7 +225,10 @@ const cancelDialog = (isClean?: boolean) => {
   dialogVisible.value = false
   let condition = ['查看', '编辑']
   if (condition.includes(dialogProps.value.title) || isClean) {
-    dialogProps.value.row = {}
+    dialogProps.value.row = {
+      products: [],
+      salesEmail: '' // 重置时保留销售邮箱字段
+    }
     ruleFormRef.value!.resetFields()
   }
 }

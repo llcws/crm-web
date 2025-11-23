@@ -33,7 +33,7 @@
   "include": [
     "src/**/*",
     "types/**/*.d.ts"
-  ],
+, "types/log.ts"  ],
   "exclude": [
     "dist",
     "node_modules",
