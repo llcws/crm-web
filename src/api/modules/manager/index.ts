@@ -34,3 +34,9 @@ export const changePassword = (params: SysManager.ReqEditPasswordParams) => {
 export const getManagerInfoApi = () => {
   return http.post<any>(COMMON_ADMIN_API + '/sys/manager/getManagerInfo', {}, { headers: { noLoading: true } })
 }
+
+// 定义ManagerApi并导出
+export const ManagerApi = {
+  // 示例接口：获取管理员列表
+  list: (params?: any) => http.post(`${COMMON_ADMIN_API}/manager/list`, params)
+}

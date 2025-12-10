@@ -5,7 +5,8 @@
       <div class="card-header">
         <span class="card-title">{{ title }}</span>
         <el-icon :style="{ color }" class="card-icon">
-          <component :is="icon" />
+          <!-- 修复：使用动态组件时确保组件已正确注册 -->
+          <component :is="iconComponent" />
         </el-icon>
       </div>
       <div class="card-value">{{ value }}</div>
@@ -17,18 +18,21 @@
           <CaretBottom />
         </el-icon>
         <span>{{ change === 0 ? '持平' : `${Math.abs(change)}%` }}</span>
-        <span class="change-desc">较昨日</span>
+        <!-- 修复：文案从“较昨日”改为“较上周”，匹配7日统计逻辑 -->
+        <span class="change-desc">较上周</span>
       </div>
     </div>
   </el-card>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { CaretTop, CaretBottom } from '@element-plus/icons-vue'
-// 原有图标保留，新增审批相关图标
+// 导入所有需要的图标组件
 import { User, Search, Document, Money, Check, Close } from '@element-plus/icons-vue'
 
-const _props = defineProps({
+// 定义Props（规范命名为props，而非_props）
+const props = defineProps({
   title: {
     type: String,
     required: true
@@ -43,7 +47,9 @@ const _props = defineProps({
   },
   icon: {
     type: String,
-    required: true
+    required: true,
+    // 限制图标取值范围，避免传参错误
+    validator: (val: string) => ['User', 'Search', 'Document', 'Money', 'Check', 'Close'].includes(val)
   },
   color: {
     type: String,
@@ -55,19 +61,22 @@ const _props = defineProps({
   }
 })
 
-// 注册图标组件：新增Check和Close图标，支持审批卡片
-const _components = {
-  User,
-  Search,
-  Document,
-  Money,
-  Check, // 审批通过图标
-  Close // 审批不通过图标
-}
+// 修复：通过计算属性映射图标名称到组件，替代原有的_components对象
+const iconComponent = computed(() => {
+  const iconMap = {
+    User,
+    Search,
+    Document,
+    Money,
+    Check,
+    Close
+  }
+  return iconMap[props.icon as keyof typeof iconMap]
+})
 </script>
 
 <style scoped>
-/* 原有样式完全不变 */
+/* 原有样式保持不变，优化可读性 */
 .card-content {
   padding: 16px;
 }
@@ -90,7 +99,7 @@ const _components = {
 
 .card-value {
   font-size: 28px;
-  font-weight: bold;
+  font-weight: 700;
   margin-bottom: 8px;
 }
 
@@ -98,6 +107,7 @@ const _components = {
   font-size: 14px;
   display: flex;
   align-items: center;
+  gap: 4px; /* 新增：优化间距，替代margin-left */
 }
 
 .up {
@@ -113,7 +123,6 @@ const _components = {
 }
 
 .change-desc {
-  margin-left: 4px;
   color: #86909c;
 }
 </style>

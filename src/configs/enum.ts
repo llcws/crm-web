@@ -136,3 +136,58 @@ export const FollowUpMethodList: { [key in FollowUpMethod]: EnumInfo } = {
   [FollowUpMethod.WECHAT]: { value: 2, label: '微信' },
   [FollowUpMethod.SMS]: { value: 3, label: '短信' }
 }
+
+// 商机状态
+export enum OpportunityStatus {
+  PENDING_FOLLOW_UP, // 待跟进
+  IN_NEGOTIATION, // 洽谈中
+  CLOSED_WON, // 已成交
+  CLOSED_LOST, // 已失败
+  CONVERTED
+}
+
+// 商机阶段
+export enum OpportunityStage {
+  QUALIFICATION, // 需求确认
+  PROPOSAL, // 方案制定
+  NEGOTIATION, // 商务谈判
+  CLOSED // 已关闭
+}
+
+// 商机来源
+export enum OpportunitySource {
+  CUSTOMER_INITIATIVE, // 客户主动
+  SALES_DISCOVERY, // 销售挖掘
+  REFERRAL, // 转介绍
+  MARKETING, // 市场推广
+  OTHER // 其他
+}
+
+// 商机状态列表（用于前端展示）
+export const OpportunityStatusList: { [key in OpportunityStatus]: EnumInfo } = {
+  [OpportunityStatus.PENDING_FOLLOW_UP]: { value: 0, label: '待跟进' },
+  [OpportunityStatus.IN_NEGOTIATION]: { value: 1, label: '洽谈中' },
+  [OpportunityStatus.CLOSED_WON]: { value: 2, label: '已成交' },
+  [OpportunityStatus.CLOSED_LOST]: { value: 3, label: '已失败' },
+  [OpportunityStatus.CONVERTED]: {
+    value: undefined,
+    label: ''
+  }
+}
+
+// 商机阶段列表（用于前端展示）
+export const OpportunityStageList: { [key in OpportunityStage]: EnumInfo } = {
+  [OpportunityStage.QUALIFICATION]: { value: 0, label: '需求确认' },
+  [OpportunityStage.PROPOSAL]: { value: 1, label: '方案制定' },
+  [OpportunityStage.NEGOTIATION]: { value: 2, label: '商务谈判' },
+  [OpportunityStage.CLOSED]: { value: 3, label: '已关闭' }
+}
+
+// 商机来源列表（用于前端展示）
+export const OpportunitySourceList: { [key in OpportunitySource]: EnumInfo } = {
+  [OpportunitySource.CUSTOMER_INITIATIVE]: { value: 0, label: '客户主动' },
+  [OpportunitySource.SALES_DISCOVERY]: { value: 1, label: '销售挖掘' },
+  [OpportunitySource.REFERRAL]: { value: 2, label: '转介绍' },
+  [OpportunitySource.MARKETING]: { value: 3, label: '市场推广' },
+  [OpportunitySource.OTHER]: { value: 4, label: '其他' }
+}

@@ -3,25 +3,25 @@
     <!-- 1. 统计卡片区域 -->
     <div class="stats-card-wrapper">
       <div class="statistics-card-group">
-        <!-- 原有卡片 -->
-        <StatisticsCard title="新增客户" :value="statisticsData.newCustomerCount" :change="statisticsData.customerChange" icon="User" color="#4285f4" />
-        <StatisticsCard title="新增线索" :value="statisticsData.newLeadCount" :change="statisticsData.leadChange" icon="Search" color="#00b42a" />
-        <StatisticsCard title="新增合同" :value="statisticsData.newContractCount" :change="statisticsData.contractChange" icon="Document" color="#ff7d00" />
+        <!-- 原有卡片：文案改为“近7日” -->
+        <StatisticsCard title="近7日新增客户" :value="statisticsData.newCustomerCount" :change="statisticsData.customerChange" icon="User" color="#4285f4" />
+        <StatisticsCard title="近7日新增线索" :value="statisticsData.newLeadCount" :change="statisticsData.leadChange" icon="Search" color="#00b42a" />
+        <StatisticsCard title="近7日新增合同" :value="statisticsData.newContractCount" :change="statisticsData.contractChange" icon="Document" color="#ff7d00" />
         <StatisticsCard
-          title="合同总金额"
+          title="近7日合同总金额"
           :value="formatCurrency(statisticsData.contractAmount)"
           :change="statisticsData.amountChange"
           icon="Money"
           color="#f53f3f"
           :isAmount="true"
         />
-        <!-- 新增审核卡片 -->
-        <StatisticsCard title="当日审核通过" :value="statisticsData.dailyApprovedCount" :change="0" icon="Check" color="#52c41a" />
-        <StatisticsCard title="当日审核不通过" :value="statisticsData.dailyRejectedCount" :change="0" icon="Close" color="#f5222d" />
+        <!-- 新增审核卡片：文案改为“近7日” -->
+        <StatisticsCard title="近7日审核通过" :value="statisticsData.dailyApprovedCount" :change="0" icon="Check" color="#52c41a" />
+        <StatisticsCard title="近7日审核不通过" :value="statisticsData.dailyRejectedCount" :change="0" icon="Close" color="#f5222d" />
       </div>
     </div>
 
-    <!-- 2. 图表区域 -->
+    <!-- 2. 图表区域：标题保持“近7日数据趋势”（明细） -->
     <div class="chart-wrapper">
       <el-card class="full-height-card">
         <template #header>近7日数据趋势</template>
@@ -32,12 +32,13 @@
 </template>
 
 <script setup lang="ts">
-// 脚本逻辑保持不变（数据获取、类型定义等）
+// 直接导入API文件中定义的类型，删除本地重复定义
 import { ref, onMounted } from 'vue'
 import { DashboardApi, DashboardStatistics, DashboardTrend } from '@/api/modules/dashboard'
 import StatisticsCard from './components/StatisticsCard.vue'
 import TrendChart from './components/TrendChart.vue'
 
+// 直接使用导入的类型定义响应式数据，无需本地重新声明接口
 const statisticsData = ref<DashboardStatistics>({
   newCustomerCount: 0,
   customerChange: 0,
@@ -57,7 +58,12 @@ const trendData = ref<DashboardTrend>({
   contractData: []
 })
 
-const formatCurrency = (value: number) => `¥${value.toFixed(2)}`
+// 金额格式化函数：兼容BigDecimal返回的数字（保留2位小数）
+const formatCurrency = (value: number) => {
+  // 处理0值和空值
+  if (!value || value === 0) return '¥0.00'
+  return `¥${value.toFixed(2)}`
+}
 
 const fetchStatisticsData = async () => {
   try {

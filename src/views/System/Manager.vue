@@ -34,7 +34,7 @@ import { useAuthButtons } from '@/hooks/useAuthButtons'
 import ProTable from '@/components/ProTable/index.vue'
 import ManagerDialog from '@/views/System/components/ManagerDialog.vue'
 import { CirclePlus, Delete, EditPen, View } from '@element-plus/icons-vue'
-import { getManagerPage, addManager, editManager, deleteManager } from '@/api/modules/manager'
+import { getManagerPage, addManager, editManager, deleteManager, changePassword } from '@/api/modules/manager'
 import { getRoleList } from '@/api/modules/role'
 import { useDepartmentStore } from '@/store/modules/department'
 
@@ -46,14 +46,16 @@ const dataCallback = (data: any) => {
     total: data.total
   }
 }
+
 const getTableList = (params: any) => {
   let newParams = { ...params }
   return getManagerPage(newParams)
 }
+
 const { BUTTONS } = useAuthButtons()
 const departmentStore = useDepartmentStore()
 
-// 表格列配置：新增邮箱列
+// 表格列配置
 const columns: ColumnProps<SysManager.ResManagerList & { email: string }>[] = [
   { type: 'selection', fixed: 'left', width: 60 },
   {
@@ -67,7 +69,6 @@ const columns: ColumnProps<SysManager.ResManagerList & { email: string }>[] = [
     search: { el: 'input' }
   },
   {
-    // 新增：邮箱列
     prop: 'email',
     label: '邮箱',
     minWidth: 140,
@@ -110,20 +111,24 @@ const columns: ColumnProps<SysManager.ResManagerList & { email: string }>[] = [
   { prop: 'operation', label: '操作', fixed: 'right', width: 330 }
 ]
 
+// 删除管理员
 const deleteAccount = async (params: SysManager.ResManagerList & { email: string }) => {
   await useHandleData(deleteManager, [params.id], `删除【${params.account}】用户`)
   proTable.value.getTableList()
 }
 
+// 弹窗引用
 const dialogRef = ref()
+// 打开弹窗（新增/编辑/查看/重置密码）
 const openDrawer = (title: string, row: Partial<SysManager.ResManagerList & { email: string }> = {}) => {
   let params = {
     title,
     row: { ...row },
     isView: title === '查看',
-    api: title === '新增' ? addManager : title === '编辑' || title === '重置' ? editManager : '',
+    // 核心：重置密码绑定专用接口
+    api: title === '新增' ? addManager : title === '编辑' ? editManager : title === '重置' ? changePassword : '',
     getTableList: proTable.value.getTableList,
-    maxHeight: title === '重置' ? '100px' : '420px'
+    maxHeight: title === '重置' ? '200px' : '420px'
   }
   dialogRef.value.acceptParams(params)
 }

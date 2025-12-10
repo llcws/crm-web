@@ -10,6 +10,11 @@ export interface ResultData<T = any> extends Result {
   data: T
 }
 
+export interface DialogProps {
+  // 其他字段...
+  roleList?: any[] // 明确为数组类型
+}
+
 // * 分页响应参数
 export interface ResPage<T> {
   list: T[]
@@ -66,6 +71,7 @@ export namespace SysRole {
     name?: string
   }
   export interface ResRoleList {
+    list: ResRoleList
     id: number
     name: string
     remark: string

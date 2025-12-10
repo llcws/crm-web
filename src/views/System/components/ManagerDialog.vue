@@ -18,27 +18,23 @@
         :hide-required-asterisk="dialogProps.isView"
       >
         <el-form-item v-if="dialogProps.title !== '重置'" label="用户名" prop="account">
-          <el-input v-model="dialogProps.row!.account" placeholder="请填写用户名（2-20字）" clearable></el-input>
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="dialogProps.row.email" placeholder="请输入邮箱" clearable></el-input>
+          <el-input id="account-input" v-model="dialogProps.row!.account" placeholder="请填写用户名（2-20字）" clearable></el-input>
         </el-form-item>
         <el-form-item v-if="dialogProps.title !== '重置'" label="昵称" prop="nickname">
-          <el-input v-model="dialogProps.row!.nickname" placeholder="请填写昵称（2-20字）" clearable></el-input>
+          <el-input id="nickname-input" v-model="dialogProps.row!.nickname" placeholder="请填写昵称（2-20字）" clearable></el-input>
         </el-form-item>
-        <!-- 新增邮箱输入项，清空默认值 -->
         <el-form-item v-if="dialogProps.title !== '重置'" label="邮箱" prop="email">
-          <el-input v-model="dialogProps.row!.email" placeholder="请填写邮箱" clearable></el-input>
+          <el-input id="email-input" v-model="dialogProps.row!.email" placeholder="请填写邮箱" clearable></el-input>
         </el-form-item>
         <el-form-item v-if="dialogProps.title === '新增' || dialogProps.title === '重置'" label="密码" prop="password">
-          <el-input v-model="dialogProps.row!.password" show-password type="password" placeholder="请填写密码"></el-input>
+          <el-input id="password-input" v-model="dialogProps.row!.password" show-password type="password" placeholder="请填写密码"></el-input>
         </el-form-item>
         <el-form-item v-if="dialogProps.title === '新增' || dialogProps.title === '重置'" label="确认密码" prop="submitPassword">
-          <el-input v-model="dialogProps.row!.submitPassword" show-password type="password" placeholder="请填写密码"></el-input>
+          <el-input id="submitPassword-input" v-model="dialogProps.row!.submitPassword" show-password type="password" placeholder="请填写密码"></el-input>
         </el-form-item>
         <el-form-item v-if="dialogProps.title !== '重置' && dialogProps.row!.type == 0" label="角色" prop="roleId">
           <el-select v-model="dialogProps.row!.roleId" filterable placeholder="请选择角色" class="w-full">
-            <el-option v-for="item in dialogProps.roleList" :key="item.Id" :label="item.name" :value="item.id" class="isabel-option" />
+            <el-option v-for="item in dialogProps.roleList" :key="item.id" :label="item.name" :value="item.id" class="isabel-option" />
           </el-select>
         </el-form-item>
         <el-form-item v-if="dialogProps.title !== '重置'" label="所属部门" prop="departId">
@@ -69,13 +65,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, computed } from 'vue'
 import { ElMessage, FormInstance } from 'element-plus'
 import { Dialog } from '@/components/Dialog'
 import { getRoleList } from '@/api/modules/role'
 import { getManagerInfoApi } from '@/api/modules/manager'
 import { useAppStoreWithOut } from '@/store/modules/app'
 import { useDepartmentStore } from '@/store/modules/department'
+
 const appStore = useAppStoreWithOut()
 interface DialogProps {
   title: string
@@ -88,22 +85,28 @@ interface DialogProps {
   getTableList?: () => Promise<any>
   roleList?: any
 }
+
 const dialogVisible = ref(false)
 const dialogProps = ref<DialogProps>({
   isView: false,
   title: '',
-  row: { status: 1, type: 0, email: '' }, // 清空邮箱默认值
+  row: { status: 1, type: 0, email: '' },
   labelWidth: 160,
   fullscreen: false,
   maxHeight: '500px'
 })
+
 const departmentStore = useDepartmentStore()
 const departmentList = departmentStore.departmentList
 
 // 接收父组件传过来的参数
 const acceptParams = (params: DialogProps): void => {
-  params.row = { ...dialogProps.value.row, ...params.row }
-  dialogProps.value = { ...dialogProps.value, ...params }
+  const defaultRow = { status: 1, type: 0, email: '' }
+  dialogProps.value = {
+    ...dialogProps.value,
+    ...params,
+    row: { ...defaultRow, ...params.row }
+  }
   dialogVisible.value = true
 }
 
@@ -118,72 +121,111 @@ const getFormRoleList = async () => {
 }
 await getFormRoleList()
 
-const rules = reactive({
-  account: [
-    { required: true, message: '用户名不能为空', trigger: 'blur' },
-    { min: 2, max: 20, message: '字数为2-20个字' }
-  ],
-  nickname: [
-    { required: true, message: '昵称不能为空', trigger: 'blur' },
-    { min: 2, max: 20, message: '字数为2-20个字' }
-  ],
-  password: [
-    {
-      required: true,
-      trigger: 'blur',
-      message: '密码不能为空'
-    },
-    {
-      pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[._~!@#$^&*])[A-Za-z0-9._~!@#$^&*]{8,16}$/,
-      message: '密码应当至少8位且含有数字、大小写字母及特殊字符'
-    }
-  ],
-  submitPassword: [
-    {
-      required: true,
-      validator: (_rule: any, value: string, callback: Function) => {
-        if (!value) {
-          return callback(new Error('确认密码不能为空'))
+// 动态校验规则
+const rules = computed(() => {
+  const baseRules = {
+    email: [
+      { required: dialogProps.value.title !== '重置', message: '邮箱不能为空', trigger: 'blur' },
+      { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+    ]
+  }
+
+  if (dialogProps.value.title === '新增') {
+    return {
+      ...baseRules,
+      account: [
+        { required: true, message: '用户名不能为空', trigger: 'blur' },
+        { min: 2, max: 20, message: '字数为2-20个字', trigger: 'blur' }
+      ],
+      nickname: [
+        { required: true, message: '昵称不能为空', trigger: 'blur' },
+        { min: 2, max: 20, message: '字数为2-20个字', trigger: 'blur' }
+      ],
+      password: [
+        { required: true, message: '密码不能为空', trigger: 'blur' },
+        { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[._~!@#$^&*])[A-Za-z0-9._~!@#$^&*]{8,16}$/, message: '密码应当至少8位且含有数字、大小写字母及特殊字符', trigger: 'blur' }
+      ],
+      submitPassword: [
+        {
+          required: true,
+          trigger: 'blur',
+          validator: (_rule: any, value: string, callback: Function) => {
+            if (!value) return callback(new Error('确认密码不能为空'))
+            if (value !== dialogProps.value.row.password) return callback(new Error('两次输入的密码不一致'))
+            callback()
+          }
         }
-        if (dialogProps.value.row.password && dialogProps.value.row.submitPassword && dialogProps.value.row.password !== dialogProps.value.row.submitPassword) {
-          return callback(new Error('两次输入的密码不一致'))
-        }
-        return callback()
-      },
-      trigger: ['blur']
+      ],
+      roleId: [{ required: true, message: '请选择角色', trigger: 'change' }],
+      status: [{ required: true, message: '请选择状态', trigger: 'change' }]
     }
-  ],
-  roleId: [{ required: true, message: '请选择角色', trigger: 'change' }],
-  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
-  type: [{ required: true, message: '请选择账号类型', trigger: 'change' }]
+  }
+
+  if (dialogProps.value.title === '编辑') {
+    return {
+      ...baseRules,
+      nickname: [
+        { required: true, message: '昵称不能为空', trigger: 'blur' },
+        { min: 2, max: 20, message: '字数为2-20个字', trigger: 'blur' }
+      ],
+      roleId: [{ required: true, message: '请选择角色', trigger: 'change' }],
+      status: [{ required: true, message: '请选择状态', trigger: 'change' }]
+    }
+  }
+
+  if (dialogProps.value.title === '重置') {
+    return {
+      password: [
+        { required: true, message: '密码不能为空', trigger: 'blur' },
+        { pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[._~!@#$^&*])[A-Za-z0-9._~!@#$^&*]{8,16}$/, message: '密码应当至少8位且含有数字、大小写字母及特殊字符', trigger: 'blur' }
+      ],
+      submitPassword: [
+        {
+          required: true,
+          trigger: 'blur',
+          validator: (_rule: any, value: string, callback: Function) => {
+            if (!value) return callback(new Error('确认密码不能为空'))
+            if (value !== dialogProps.value.row.password) return callback(new Error('两次输入的密码不一致'))
+            callback()
+          }
+        }
+      ]
+    }
+  }
+
+  return {}
 })
+
 const ruleFormRef = ref<FormInstance>()
-const handleSubmit = () => {
-  ruleFormRef.value!.validate(async (valid) => {
-    if (!valid) return
-    try {
-      await dialogProps.value.api!(dialogProps.value.row).then((_) => {
-        if (dialogProps.value.row.Id === appStore.$state.userInfo.Id)
-          getManagerInfoApi().then((res) => {
-            appStore.setUserinfo(res.data)
-          })
-      })
-      ElMessage.success({ message: `${dialogProps.value.title}管理员成功！` })
-      dialogProps.value.getTableList!()
-      dialogVisible.value = false
-      ruleFormRef.value!.resetFields()
-      cancelDialog(true)
-    } catch (error) {
-      console.log(error)
+const handleSubmit = async () => {
+  if (!ruleFormRef.value || !dialogProps.value.api) return
+
+  try {
+    await ruleFormRef.value.validate()
+    await dialogProps.value.api(dialogProps.value.row)
+
+    if (dialogProps.value.row.id === appStore.$state.userInfo.id) {
+      const res = await getManagerInfoApi()
+      appStore.setUserinfo(res.data)
     }
-  })
+
+    ElMessage.success(`${dialogProps.value.title}管理员成功！`)
+    if (typeof dialogProps.value.getTableList === 'function') {
+      dialogProps.value.getTableList()
+    }
+    cancelDialog(true)
+  } catch (error) {
+    console.error(`${dialogProps.value.title}失败`, error)
+    ElMessage.error(`${dialogProps.value.title}管理员失败！`)
+  }
 }
+
 const cancelDialog = (isClean?: boolean) => {
   dialogVisible.value = false
   let condition = ['查看', '编辑']
-  if (condition.includes(dialogProps.value.title) || isClean) {
-    dialogProps.value.row = { status: 1, type: 0, email: '' } // 重置邮箱值
-    ruleFormRef.value!.resetFields()
+  if ((condition.includes(dialogProps.value.title) || isClean) && ruleFormRef.value) {
+    dialogProps.value.row = { status: 1, type: 0, email: '' }
+    ruleFormRef.value.resetFields()
   }
 }
 </script>
